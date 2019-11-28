@@ -1,0 +1,106 @@
+# Default values for hello app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 3
+
+# This will use the default deployment strategy unless it is overriden
+deploymentStrategy: {}
+
+image:
+  repository: gcr.io/hello
+  tag: latest
+  # If using a private repository, the name of the imagePullSecret to use
+  # pullSecret: my-repo-secret
+
+# A custom hello.properties file can be provided via dictionary.
+# For example:
+helloProperties:
+  HELLO_DB_URL: "jdbc:postgresql://postgres:5432/hello"
+  HELLO_DB_USERNAME: "postgres"
+  HELLO_DB_PASSWORD: "helloPassword"
+
+service:
+  type: ClusterIP
+  externalPort: 8080
+  internalPort: 8080
+  labels:
+  annotations: {}
+  # May be used in example for internal load balancing in GCP:
+  # cloud.google.com/load-balancer-type: Internal
+  # loadBalancerSourceRanges:
+  #   - 0.0.0.0/0
+  # loadBalancerIP: 1.2.3.4
+ingress:
+  enabled: false
+  # Used to create an Ingress record.
+  hosts:
+    - name: hello.example.com
+      # default paths for "/" and "/*" will be added
+      path: /
+      # If a different path is defined, that path and {path}/* will be added to the ingress resource
+      # path: /hello
+  annotations: {}
+  tls: []
+  # Secrets must be manually created in the namespace.
+  # - secretName: chart-example-tls
+  #   hosts:
+  #     - chart-example.local
+
+readinessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 6
+  # If an ingress *path* other than the root (/) is defined, it should be reflected here
+  # A trailing "/" must be included
+  helloWebContext: /actuator/health
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  # If an ingress *path* other than the root (/) is defined, it should be reflected here
+  # A trailing "/" must be included
+  helloWebContext: /
+
+# Set annotations for pods
+annotations: {}
+
+resources: {}
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#  cpu: 100m
+#  memory: 128Mi
+# requests:
+#  cpu: 100m
+#  memory: 128Mi
+
+## Configuration value to select database type
+## Option to use "postgresql" or "mysql" database type, by default "postgresql" is chosen
+## Set the "enable" field to true of the database type you select (if you want to use internal database) and false of the one you don't select
+database:
+  type: "postgresql"
+
+## Configuration values for postgresql dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+postgresql:
+  # Enable to deploy the PostgreSQL chart
+  enabled: true
+  # To use an external PostgreSQL instance, set enabled to false and uncomment
+  # the line below:
+  # postgresServer: ""
+  # To use an external secret for the password for an external PostgreSQL
+  # instance, set enabled to false and provide the name of the secret on the
+  # line below:
+  # postgresPasswordSecret: ""
+  postgresUser: "postgres"
+  postgresPassword: "helloPassword"
+  postgresDatabase: "hello"
+  # Specify the TCP port that PostgreSQL should use
+  service:
+    port: 5432
+
+# Additional labels to add to the pods:
+# podLabels:
+#   key: value
+podLabels: {}
