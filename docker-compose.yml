@@ -1,0 +1,28 @@
+version: '3'
+services:
+  hello-api-app-container:
+    image: hello-api-app:1
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - /data/hello-api-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      HELLO_DB_URL: jdbc:postgresql://db:5432/hello
+      HELLO_DB_USERNAME: postgres
+      HELLO_DB_PASSWORD: 123456
+      JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
+
+  db:
+    container_name: postgres
+    image: postgres:11
+    environment:
+      - POSTGRES_PASSWORD:'123456'
+      - POSTGRES_DB=hello
+    ports:
+      - 5432:5432
+
